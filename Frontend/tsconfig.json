@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "ES6",                          // Target JavaScript version
+      "lib": ["DOM", "DOM.Iterable", "ES6"],   // Include standard libraries
+      "allowJs": true,                         // Allow JavaScript files
+      "jsx": "react-jsx",                      // Enable JSX support
+      "module": "ESNext",                      // Module system
+      "moduleResolution": "Node",             // Resolve modules using Node conventions
+      "strict": true,                          // Enable all strict type-checking options
+      "esModuleInterop": true,                 // Allows default imports from CommonJS
+      "skipLibCheck": true,                    // Skip type checking of all declaration files
+      "forceConsistentCasingInFileNames": true // Enforce consistent casing in imports
+    },
+    "include": ["src"],                        // Include the `src` directory
+    "exclude": ["node_modules", "dist"]        // Exclude unnecessary directories
+  }
+  
