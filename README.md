@@ -5,3 +5,6 @@
 # For Frontend
   * npm install
   * npm start
+
+#deploy
+vercel
