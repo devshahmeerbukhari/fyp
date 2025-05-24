@@ -37,7 +37,7 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="flex justify-between items-center p-4 bg-white shadow-md w-full max-w-screen overflow-hidden">
+      <header className="flex relative overflow-visible justify-between items-center p-4 bg-white shadow-md w-full max-w-screen">
         {/* Logo */}
         <div className="text-2xl font-bold text-green-600 truncate flex-shrink-0">
           Pakistani Panorama
