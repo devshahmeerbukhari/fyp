@@ -1,9 +1,9 @@
-import React from 'react';
+
 import { Routes, Route } from 'react-router-dom'; // Import Routes and Route for routing
-import Navbar from './pages/navbar';
-import SearchBar from './components/searchBar';
-import HotelSearch from './components/hotels';
-import ChatBot from './components/chatbot/chatbot';
+import Navbar from './Pages/Navbar';
+import SearchBar from './components/SearchBar/Searchbar';
+import HotelSearch from './components/HotelSearch/HotelSearch';
+import ChatBot from './components/Chatbot/Chatbot';
 
 
 const App = () => {

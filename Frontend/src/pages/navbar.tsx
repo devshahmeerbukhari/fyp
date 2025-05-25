@@ -1,14 +1,19 @@
 import { useState } from "react";
-import LoginAndRegisterPage from "../components/loginSignupPage";
-import User from "../components/User";
+import {LoginAndRegister} from "../components/LoginAndRegister/LoginAndRegister";
+import { UserDropdown } from "../components/UserDropdown/UserDropdown";
 import { Link } from "react-router-dom";
+
+interface MenuItem {
+  menue: string;
+  path: string;
+}
 
 const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState(null); // State for tracking selected item
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
 
-  const navigationMenueItems = [
+  const navigationMenuItems = [
     { menue: "Lahore", path: "" },
     { menue: "Hotels", path: "/components/hotels" },
     { menue: "Things to Do", path: "#" },
@@ -24,15 +29,15 @@ const Navbar = () => {
     setIsModalOpen(false);
   };
 
-  const handleMenuItemClick = (menuItem: any) => {
+  const handleMenuItemClick = (menuItem: MenuItem) => {
     setSelectedMenuItem(menuItem);
     setIsMenuOpen(false); // Close the menu after selection
   };
 
   const [userLoggedIn, setUserLoggedIn] = useState(false);
-  const handleValueChange = (User: boolean, newValueOfIsModalOpen: boolean) => {
-    setUserLoggedIn(User);
-    setIsModalOpen(newValueOfIsModalOpen);
+  const handleValueChange = (user: boolean, newModalState: boolean) => {
+    setUserLoggedIn(user);
+    setIsModalOpen(newModalState);
   };
 
   return (
@@ -46,7 +51,7 @@ const Navbar = () => {
         {/* Desktop Links */}
         <nav className="hidden md:hidden lg:flex flex-1 justify-center">
           <ul className="flex space-x-8 text-gray-600">
-            {navigationMenueItems.map((menuItem, index) => (
+            {navigationMenuItems.map((menuItem, index) => (
               <li key={index}>
                 <Link
                   to={menuItem.path}
@@ -60,8 +65,8 @@ const Navbar = () => {
         </nav>
 
         {/* Sign In Button */}
-        {userLoggedIn === true ? (
-          <User />
+        {userLoggedIn ? (
+          <UserDropdown user={{id: "123", name: "User"}} />
         ) : (
           <button
             className="px-4 py-2 bg-green-600 text-white rounded-lg lg:block hidden hover:bg-green-700 transition duration-300 flex-shrink-0"
@@ -88,10 +93,12 @@ const Navbar = () => {
       >
         <div className="bg-slate-200 flex flex-col items-center">
           <ul className="flex flex-col items-center space-y-4 pb-4 pt-2 w-full text-center">
-            {navigationMenueItems.map((menuItem, index) => (
+            {navigationMenuItems.map((menuItem, index) => (
               <li
                 key={index}
-                className={`cursor-pointer py-2 px-4 rounded-md transition-all duration-300 transform "hover:text-green-600 hover:scale-105"`}
+                className={`cursor-pointer py-2 px-4 rounded-md transition-all duration-300 transform hover:text-green-600 hover:scale-105 ${
+                  selectedMenuItem?.menue === menuItem.menue ? "text-green-600 font-bold" : ""
+                }`}
                 onClick={() => handleMenuItemClick(menuItem)}
               >
                 {menuItem.menue}
@@ -100,8 +107,8 @@ const Navbar = () => {
           </ul>
 
           {/* Sign In Button for Mobile */}
-          {userLoggedIn === true ? (
-            <User />
+          {userLoggedIn ? (
+            <UserDropdown user={{id: "123", name: "User"}} />
           ) : (
             <button
               className="px-4 py-2 mb-5 bg-green-600 text-white rounded-lg w-3/4 hover:bg-green-700 transition duration-300"
@@ -126,7 +133,7 @@ const Navbar = () => {
             >
               &times;
             </button>
-            <LoginAndRegisterPage onValueChange={handleValueChange} />
+            <LoginAndRegister onValueChange={handleValueChange} />
           </div>
         </div>
       )}
