@@ -19,7 +19,11 @@
 import { z } from 'zod'
 
 export const RegistrationSchema = z.object({
-    username: z.string().min(6, {message: "Username must be of at least 6 character(s)"}),
-    email: z.string().email({message: "Invalid Email"}),
-    password: z.string().min(6, {message: "Password must be of atleast of 6 charcter(s)"}),
+    username: z.string().min(5, "Username must be at least 5 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string()
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"]
 })
