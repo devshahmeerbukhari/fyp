@@ -4,12 +4,9 @@ import cors from "cors";
 import session from "express-session";
 import setupPassport from "./config/passport.config.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
-import { connectRedis } from "./config/redis.config.js";
+
 
 const app = express();
-
-// Connect to Redis
-connectRedis();
 
 // Configure session for passport
 app.use(
