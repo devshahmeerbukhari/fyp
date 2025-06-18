@@ -1,22 +1,38 @@
-import mongoose from "mongoose";
-import connectDB from "./db/db.js";
-import dotenv from "dotenv";
 import { app } from "./app.js";
-dotenv.config({ path: "./.env" });
-const PORT = process.env.PORT || 4000;
-connectDB()
+import mongoose from "mongoose";
+import { closeRedisConnection } from "./config/redis.config.js";
+
+const PORT = process.env.PORT || 5000;
+
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGODB_URI)
   .then(() => {
-    app.on("error", (error) => {
-      console.log("ERROR", error);
-      throw error;
-    });
+    console.log("Connected to MongoDB");
     app.listen(PORT, () => {
-      console.log("APP listening on PORT : ", PORT);
-    });
-    app.get("/", (req, res) => {
-      res.send("Server is running");
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.log("MONGODB connection FAILED", error);
+    console.error("MongoDB connection failed:", error.message);
+    process.exit(1);
   });
+
+// Handle graceful shutdown
+const gracefulShutdown = async () => {
+  try {
+    await mongoose.connection.close();
+    console.log('MongoDB connection closed');
+    
+    await closeRedisConnection();
+    
+    process.exit(0);
+  } catch (err) {
+    console.error('Error during graceful shutdown:', err);
+    process.exit(1);
+  }
+};
+
+// Listen for termination signals
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);

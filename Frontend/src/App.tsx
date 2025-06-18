@@ -14,12 +14,17 @@ import PageNotFound from './Pages/PageNotFound';
 import GoogleAuthSuccess from './Pages/GoogleAuthSuccess';
 import GoogleAuthError from './Pages/GoogleAuthError';
 import Emergency from './Pages/Emergency';
+import VirtualTour from './Pages/VirtualTour';
+import Homepage from './Pages/Homepage';
+import Hero from './components/Hero/Hero';
+import Features from './components/Features/Features';
+import Loader from './components/Loader/Loader';
 
 const App = () => {
   const { loading } = useAuth();
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <Loader />;
   }
 
   return (
@@ -32,12 +37,12 @@ const App = () => {
         {/* Main Layout Routes */}
         <Route path="/" element={<Layout />}>
           {/* Home and General Routes */}
-          <Route index element={<SearchBar />} />
+          <Route index element={<Homepage />} />
           
           {/* Navigation Menu Routes */}
           <Route path="/destinations" element={<SearchBar />} /> {/* Will be replaced with Destinations component when created */}
-          <Route path="/virtual-tours" element={<SearchBar />} /> {/* Will be replaced with VirtualTours component when created */}
-          <Route path="/bookings" element={<SearchBar />} /> {/* Will be replaced with Bookings component when created */}
+          <Route path="/virtual-tours" element={<VirtualTour />} /> {/* Will be replaced with VirtualTours component when created */}
+          <Route path="/bookings" element={<Features/>} /> {/* Will be replaced with Bookings component when created */}
           <Route path="/emergency" element={<Emergency />} /> {/* Will be replaced with Emergency component when created */}
           
           {/* Other General Routes */}

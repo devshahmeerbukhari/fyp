@@ -1,8 +1,9 @@
 // Frontend/src/Pages/Emergency.tsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { Hospital, Shield, FireExtinguisher } from 'lucide-react';
+import { Hospital, Shield, FireExtinguisher, MapPin, Phone, Clock, Navigation, ExternalLink } from 'lucide-react';
 import type { Place, ApiResponse, EmergencyCategory } from '../types/emergency.types';
 import EmergencyCard from '../components/EmergencyCard/EmergencyCard';
+import EmergencyCardSkeleton from '../components/EmergencyCard/EmergencyCardSkeleton';
 
 const Emergency = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -11,13 +12,14 @@ const Emergency = () => {
   const [error, setError] = useState<string>('');
   const [debug, setDebug] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'closed'>('all');
+  const [dataSource, setDataSource] = useState<string>('');
 
   // Using colors that match the project's green-based scheme
   const emergencyCategories: EmergencyCategory[] = [
     { 
       id: 'hospital', 
       name: 'Hospitals', 
-      icon: <Hospital className="h-10 w-10" strokeWidth={1.5} />,
+      icon: <Hospital className="h-7 w-7" strokeWidth={1.5} />,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       hoverBg: 'hover:bg-red-100'
@@ -25,7 +27,7 @@ const Emergency = () => {
     { 
       id: 'police', 
       name: 'Police Stations', 
-      icon: <Shield className="h-10 w-10" strokeWidth={1.5} />,
+      icon: <Shield className="h-7 w-7" strokeWidth={1.5} />,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       hoverBg: 'hover:bg-blue-100'
@@ -33,7 +35,7 @@ const Emergency = () => {
     { 
       id: 'fire_station', 
       name: 'Fire Stations', 
-      icon: <FireExtinguisher className="h-10 w-10" strokeWidth={1.5} />,
+      icon: <FireExtinguisher className="h-7 w-7" strokeWidth={1.5} />,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
       hoverBg: 'hover:bg-orange-100'
@@ -41,12 +43,12 @@ const Emergency = () => {
     { 
       id: 'pharmacy', 
       name: 'Pharmacies', 
-      icon: <Hospital className="h-10 w-10" strokeWidth={1.5} />,
+      icon: <Hospital className="h-7 w-7" strokeWidth={1.5} />,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
       hoverBg: 'hover:bg-green-100'
     }
-  ];
+  ]
 
   // Move isOpen function here, before it's used in the useMemo hook
   const isOpen = (place: Place): boolean => {
@@ -69,64 +71,70 @@ const Emergency = () => {
 
   const fetchNearbyPlaces = async (): Promise<void> => {
     setLoading(true);
-    setError('');
-    setDebug(null);
     
     try {
-      // Get user location
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          
-          const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
-          
-          try {
-            const response = await fetch(`${backendUrl}/api/v1/emergency/nearby`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                latitude,
-                longitude,
-                type: selectedCategory,
-                radius: 10000 // 10km in meters
-              }),
-            });
-            
-            let data: ApiResponse;
-            try {
-              data = await response.json();
-              setDebug(data);
-            } catch (jsonError) {
-              throw new Error('Invalid response from server');
-            }
-            
-            if (!response.ok) {
-              const errorMessage = data?.message || `Server returned ${response.status}`;
-              throw new Error(errorMessage);
-            }
-            
-            // Handle standardized API response
-            if (!data.success || !Array.isArray(data.data)) {
-              throw new Error('Invalid response format from server');
-            }
-            
-            setResults(data.data);
-          } catch (fetchError: any) {
-            setDebug({ error: fetchError.message });
-            throw fetchError;
-          }
-        },
-        (geoError) => {
-          setDebug({ geoError: geoError.message, code: geoError.code });
-          setError('Please enable location access to find nearby emergency services');
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          timeout: 5000, // Shorter timeout
+          maximumAge: 0,
+          enableHighAccuracy: true
+        });
+      });
+      
+      const { latitude, longitude } = position.coords;
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      
+      console.time('apiRequest'); // Start timing
+      
+      try {
+        const response = await fetch(`${backendUrl}/api/v1/emergency/nearby`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            latitude,
+            longitude,
+            type: selectedCategory,
+            radius: 10000
+          }),
+        });
+        
+        console.timeEnd('apiRequest'); // End timing API request
+        
+        const data = await response.json();
+        console.log('Data source:', data.message); // Check if from cache or API
+        
+        if (!response.ok) {
+          throw new Error(data?.message || `Server returned ${response.status}`);
         }
-      );
+        
+        if (!data.success || !Array.isArray(data.data)) {
+          throw new Error('Invalid response format from server');
+        }
+        
+        // Pre-process data before setting state to minimize render work
+        const processedResults = data.data.map((place: Place) => ({
+          ...place,
+          isOpenNow: place.currentOpeningHours?.openNow || false,
+          photoUrl: place.photos?.length ? getPhotoUrl(place) : null
+        }));
+        
+        console.time('stateUpdate');
+        setResults(processedResults);
+        setLoading(false); // Move this here for immediate UI update
+        console.timeEnd('stateUpdate');
+        
+        if (data.message.includes("cache")) {
+          setDataSource('Redis Cache');
+        } else {
+          setDataSource('Google Places API');
+        }
+        
+      } catch (fetchError: any) {
+        throw fetchError;
+      }
     } catch (error: any) {
       setError(error.message || 'An error occurred while fetching nearby places');
-    } finally {
-      setLoading(false);
+      setLoading(false); // Make sure we stop loading on error
     }
   };
 
@@ -145,52 +153,50 @@ const Emergency = () => {
         <p className="text-gray-600 max-w-xl mx-auto">Find nearby emergency services based on your current location</p>
       </div>
       
-      <div className="mb-12">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Select Emergency Service</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-2 text-gray-800">Select Emergency Service</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {emergencyCategories.map((category) => (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
-              className={`group relative flex flex-col items-center rounded-xl overflow-hidden transition-all duration-300 
+              className={`group relative flex flex-col items-center rounded-lg overflow-hidden transition-all duration-300 
                 ${selectedCategory === category.id 
-                  ? `${category.color} ${category.bgColor} shadow-lg border-2 border-${category.color.replace('text-', '')}/50 transform scale-[1.02]` 
-                  : 'bg-white border border-gray-100 hover:shadow-md'}`}
+                  ? `${category.color} ${category.bgColor} shadow-sm border border-${category.color.replace('text-', '')}/30` 
+                  : 'bg-white border border-gray-100 hover:bg-gray-50'}`}
             >
-              {/* Glass effect top accent */}
+              {/* Top accent */}
               <div 
-                className={`absolute top-0 left-0 right-0 h-1 ${category.color.replace('text-', 'bg-')}/70`} 
+                className={`absolute top-0 left-0 right-0 h-0.5 ${category.color.replace('text-', 'bg-')}/60`} 
               />
               
-              <div className="p-6 flex flex-col items-center w-full">
-                {/* Icon with animated background */}
+              <div className="p-2 flex flex-col items-center w-full">
+                {/* Icon with background */}
                 <div 
-                  className={`relative flex items-center justify-center w-16 h-16 mb-4 rounded-full 
+                  className={`relative flex items-center justify-center w-10 h-10 mb-1.5 rounded-full 
                     ${selectedCategory === category.id 
                       ? `${category.bgColor} ${category.color}` 
                       : `bg-gray-50 ${category.color}`}
                     transition-all duration-300 group-hover:${category.bgColor}`}
                 >
-                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className={`absolute inset-0 rounded-full ${category.color.replace('text-', 'bg-')}/10 animate-pulse`}></div>
-                  </div>
-                  {category.icon}
+                  {/* Smaller icon */}
+                  {React.isValidElement(category.icon) 
+                    ? React.cloneElement(category.icon as React.ReactElement<any>, { 
+                        className: "h-5 w-5", 
+                        strokeWidth: 1.5 
+                      })
+                    : category.icon
+                  }
                 </div>
                 
-                {/* Category name */}
-                <h3 className={`font-medium text-center transition-colors duration-300
+                {/* Category name - smaller */}
+                <h3 className={`font-medium text-xs text-center leading-tight transition-colors duration-300
                   ${selectedCategory === category.id 
                     ? category.color
                     : 'text-gray-800 group-hover:' + category.color}`}
                 >
                   {category.name}
                 </h3>
-                
-                {/* Info text */}
-                <p className={`mt-2 text-xs text-gray-500 text-center transition-opacity duration-300 
-                  ${selectedCategory === category.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-80'}`}>
-                  Find nearby {category.name.toLowerCase()}
-                </p>
               </div>
             </button>
           ))}
@@ -247,34 +253,20 @@ const Emergency = () => {
           </h2>
           
           {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array(6).fill(0).map((_, index) => (
+                <EmergencyCardSkeleton key={`skeleton-${index}`} />
+              ))}
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              <p>{error}</p>
-              <button 
-                onClick={fetchNearbyPlaces}
-                className="mt-2 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded-lg text-sm transition-colors"
-              >
-                Try Again
-              </button>
-                  </div>
-          ) : filteredResults.length === 0 ? (
-            <div className="bg-gray-50 border border-gray-200 text-gray-700 px-4 py-8 rounded-lg text-center">
-              <p className="mb-2">No {statusFilter !== 'all' ? `${statusFilter} ` : ''}results found for this category in your area.</p>
-              {statusFilter !== 'all' && (
-                <button 
-                  onClick={() => setStatusFilter('all')}
-                  className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg text-sm transition-colors"
-                >
-                  Show All Results Instead
-                </button>
-                  )}
-                </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredResults.map(place => (
+            <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4">
+              <p className="flex items-center">
+                <span className="mr-2">⚠️</span> {error}
+              </p>
+            </div>
+          ) : filteredResults.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredResults.map((place) => (
                 <EmergencyCard
                   key={place.id}
                   place={place}
@@ -282,15 +274,27 @@ const Emergency = () => {
                   getPhotoUrl={getPhotoUrl}
                   isOpen={isOpen}
                 />
-            ))}
-          </div>
-          )}
+              ))}
+            </div>
+          ) : selectedCategory ? (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4">
+              <p className="flex items-center">
+                <span className="mr-2">ℹ️</span> No {emergencyCategories.find(c => c.id === selectedCategory)?.name.toLowerCase()} found nearby.
+              </p>
+            </div>
+          ) : null}
         </div>
       )}
 
       {!selectedCategory && (
         <div className="text-center py-12 text-gray-500">
           <p>Please select an emergency service category above to find nearby locations</p>
+        </div>
+      )}
+
+      {dataSource && (
+        <div className="text-xs text-gray-500 mb-4">
+          Data source: {dataSource} | Loaded at: {new Date().toLocaleTimeString()}
         </div>
       )}
     </div>
