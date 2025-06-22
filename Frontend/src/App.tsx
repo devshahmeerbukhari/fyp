@@ -19,6 +19,7 @@ import Homepage from './Pages/Homepage';
 import Hero from './components/Hero/Hero';
 import Features from './components/Features/Features';
 import Loader from './components/Loader/Loader';
+import Destinations from './Pages/Destinations';
 
 const App = () => {
   const { loading } = useAuth();
@@ -40,7 +41,8 @@ const App = () => {
           <Route index element={<Homepage />} />
           
           {/* Navigation Menu Routes */}
-          <Route path="/destinations" element={<SearchBar />} /> {/* Will be replaced with Destinations component when created */}
+          <Route path="/destinations" element={<Destinations />} />
+           {/* Will be replaced with Destinations component when created */}
           <Route path="/virtual-tours" element={<VirtualTour />} /> {/* Will be replaced with VirtualTours component when created */}
           <Route path="/bookings" element={<Features/>} /> {/* Will be replaced with Bookings component when created */}
           <Route path="/emergency" element={<Emergency />} /> {/* Will be replaced with Emergency component when created */}
