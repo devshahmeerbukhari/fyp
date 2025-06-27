@@ -69,6 +69,16 @@ async function getSpecificCategoryDestinations(req, res, category, startTime) {
         `[CACHE] Retrieved ${parsedData.length} destinations from cache`
       );
 
+      // Log a sample of cached data to debug
+      if (parsedData.length > 0) {
+        console.log(
+          `[CACHE DEBUG] First cached item has generativeSummary: ${!!parsedData[0].generativeSummary}`
+        );
+        console.log(
+          `[CACHE DEBUG] First cached item has reviewSummary: ${!!parsedData[0].reviewSummary}`
+        );
+      }
+
       const responseTime = Date.now() - startTime;
       console.log(
         `[PERFORMANCE] Request completed in ${responseTime}ms (Source: Redis Cache)`
@@ -164,6 +174,56 @@ async function getSpecificCategoryDestinations(req, res, category, startTime) {
       `[PAGINATION] First page returned ${allDestinations.length} destinations`
     );
 
+    // Log sample destination data for debugging
+    if (allDestinations.length > 0) {
+      const samplePlace = allDestinations[0];
+      console.log(
+        `[DEBUG] Sample destination: ${samplePlace.displayName?.text}`
+      );
+      console.log(
+        `[DEBUG] Has generativeSummary: ${!!samplePlace.generativeSummary}`
+      );
+      console.log(`[DEBUG] Has reviewSummary: ${!!samplePlace.reviewSummary}`);
+
+      if (samplePlace.generativeSummary) {
+        console.log(
+          `[DEBUG] Generative Summary structure:`,
+          JSON.stringify(
+            {
+              hasOverview: !!samplePlace.generativeSummary.overview,
+              hasOverviewText: !!samplePlace.generativeSummary.overview?.text,
+              overview:
+                samplePlace.generativeSummary.overview?.text?.substring(0, 50) +
+                "...",
+              hasDisclaimerText: !!samplePlace.generativeSummary.disclaimerText,
+            },
+            null,
+            2
+          )
+        );
+      }
+
+      if (samplePlace.reviewSummary) {
+        console.log(
+          `[DEBUG] Review Summary:`,
+          JSON.stringify(
+            {
+              text: samplePlace.reviewSummary.text?.substring(0, 50) + "...",
+            },
+            null,
+            2
+          )
+        );
+      }
+
+      console.log(
+        `[DEBUG] Has googleMapsLinks: ${!!samplePlace.googleMapsLinks}`
+      );
+      console.log(
+        `[DEBUG] Has reviewsUri: ${!!samplePlace.googleMapsLinks?.reviewsUri}`
+      );
+    }
+
     // Check if we have a next page token
     if (firstPageData.nextPageToken) {
       console.log(
@@ -195,6 +255,21 @@ async function getSpecificCategoryDestinations(req, res, category, startTime) {
           console.log(
             `[PAGINATION] Second page returned ${secondPageData.places.length} destinations`
           );
+
+          // Log second page sample if available
+          if (secondPageData.places.length > 0) {
+            const sampleSecondPlace = secondPageData.places[0];
+            console.log(
+              `[DEBUG] Second page sample destination: ${sampleSecondPlace.displayName?.text}`
+            );
+            console.log(
+              `[DEBUG] Has generativeSummary: ${!!sampleSecondPlace.generativeSummary}`
+            );
+            console.log(
+              `[DEBUG] Has reviewSummary: ${!!sampleSecondPlace.reviewSummary}`
+            );
+          }
+
           allDestinations = [...allDestinations, ...secondPageData.places];
         } else {
           console.error(
@@ -301,6 +376,16 @@ async function getAllCategoriesCombined(req, res, startTime) {
         `[CACHE HIT] Found all categories data in Redis with ${parsedData.length} destinations`
       );
 
+      // Log a sample of cached data
+      if (parsedData.length > 0) {
+        console.log(
+          `[CACHE DEBUG] Combined cache has generativeSummary: ${!!parsedData[0].generativeSummary}`
+        );
+        console.log(
+          `[CACHE DEBUG] Combined cache has reviewSummary: ${!!parsedData[0].reviewSummary}`
+        );
+      }
+
       const responseTime = Date.now() - startTime;
       console.log(
         `[PERFORMANCE] Request completed in ${responseTime}ms (Source: Redis Cache)`
@@ -344,6 +429,16 @@ async function getAllCategoriesCombined(req, res, startTime) {
       if (catCachedData) {
         console.log(`[CACHE HIT] Using cached data for ${cat}`);
         categoryDestinations = JSON.parse(catCachedData);
+
+        // Log sample summary fields from cache
+        if (categoryDestinations.length > 0) {
+          console.log(
+            `[DEBUG] ${cat} cache has generativeSummary: ${!!categoryDestinations[0].generativeSummary}`
+          );
+          console.log(
+            `[DEBUG] ${cat} cache has reviewSummary: ${!!categoryDestinations[0].reviewSummary}`
+          );
+        }
       } else {
         // If not in cache, fetch from API
         console.log(`[CACHE MISS] Fetching ${cat} from API`);
@@ -388,6 +483,41 @@ async function getAllCategoriesCombined(req, res, startTime) {
 
         // Filter and process results
         categoryDestinations = data.places || [];
+
+        // Log sample from API for debugging
+        if (categoryDestinations.length > 0) {
+          const samplePlace = categoryDestinations[0];
+          console.log(
+            `[DEBUG] ${cat} API sample destination: ${samplePlace.displayName?.text}`
+          );
+          console.log(
+            `[DEBUG] Has generativeSummary: ${!!samplePlace.generativeSummary}`
+          );
+          console.log(
+            `[DEBUG] Has reviewSummary: ${!!samplePlace.reviewSummary}`
+          );
+
+          if (samplePlace.generativeSummary) {
+            console.log(
+              `[DEBUG] ${cat} Generative Summary structure:`,
+              JSON.stringify(
+                {
+                  hasOverview: !!samplePlace.generativeSummary.overview,
+                  hasOverviewText:
+                    !!samplePlace.generativeSummary.overview?.text,
+                  overview:
+                    samplePlace.generativeSummary.overview?.text?.substring(
+                      0,
+                      50
+                    ) + "...",
+                },
+                null,
+                2
+              )
+            );
+          }
+        }
+
         categoryDestinations = filterDestinationsByCategory(
           categoryDestinations,
           cat
@@ -520,30 +650,66 @@ function filterDestinationsByCategory(destinations, category) {
  * Prepare destinations data for caching
  */
 function prepareDestinationsForCache(destinations) {
-  return destinations.map((place) => ({
-    id: place.id,
-    displayName: place.displayName,
-    formattedAddress: place.formattedAddress,
-    location: place.location,
-    photos: place.photos
-      ? place.photos.map((photo) => ({
-          name: photo.name,
-          widthPx: photo.widthPx,
-          heightPx: photo.heightPx,
-        }))
-      : [],
-    rating: place.rating,
-    userRatingCount: place.userRatingCount,
-    editorialSummary: place.editorialSummary,
-    primaryTypeDisplayName: place.primaryTypeDisplayName,
-    types: place.types,
-    googleMapsUri: place.googleMapsUri,
-    websiteUri: place.websiteUri,
-    // Added new fields
-    generativeSummary: place.generativeSummary,
-    reviewSummary: place.reviewSummary,
-    googleMapsLinks: {
-      reviewsUri: place.googleMapsLinks?.reviewsUri || null,
-    },
-  }));
+  // Log first place's summaries if available for debugging
+  if (destinations && destinations.length > 0) {
+    const firstPlace = destinations[0];
+    console.log(`[CACHE PREP] Destination: ${firstPlace.displayName?.text}`);
+    console.log(
+      `[CACHE PREP] Has generativeSummary: ${!!firstPlace.generativeSummary}`
+    );
+    console.log(
+      `[CACHE PREP] Has reviewSummary: ${!!firstPlace.reviewSummary}`
+    );
+
+    if (firstPlace.generativeSummary) {
+      console.log(
+        `[CACHE PREP] Generative summary structure:`,
+        JSON.stringify(
+          {
+            hasOverview: !!firstPlace.generativeSummary.overview,
+            hasOverviewText: !!firstPlace.generativeSummary.overview?.text,
+            hasDisclaimerText: !!firstPlace.generativeSummary.disclaimerText,
+          },
+          null,
+          2
+        )
+      );
+    }
+  }
+
+  return destinations.map((place) => {
+    // Check each place for summary fields and log any inconsistencies
+    if (place.generativeSummary && !place.generativeSummary.overview) {
+      console.log(
+        `[WARNING] Place ${place.id} has generativeSummary but missing overview property`
+      );
+    }
+
+    return {
+      id: place.id,
+      displayName: place.displayName,
+      formattedAddress: place.formattedAddress,
+      location: place.location,
+      photos: place.photos
+        ? place.photos.map((photo) => ({
+            name: photo.name,
+            widthPx: photo.widthPx,
+            heightPx: photo.heightPx,
+          }))
+        : [],
+      rating: place.rating,
+      userRatingCount: place.userRatingCount,
+      editorialSummary: place.editorialSummary,
+      primaryTypeDisplayName: place.primaryTypeDisplayName,
+      types: place.types,
+      googleMapsUri: place.googleMapsUri,
+      websiteUri: place.websiteUri,
+      // Preserve exact structure of these fields without modification
+      generativeSummary: place.generativeSummary,
+      reviewSummary: place.reviewSummary,
+      googleMapsLinks: {
+        reviewsUri: place.googleMapsLinks?.reviewsUri || null,
+      },
+    };
+  });
 }

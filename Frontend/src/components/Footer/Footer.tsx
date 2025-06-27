@@ -17,7 +17,7 @@ const Footer = () => {
             <div className="mt-4 flex flex-col space-y-2">
               <a href="mailto:info@pakistanipanorama.com" className="flex items-center text-sm text-gray-600 hover:text-green-600 transition duration-300">
                 <Mail size={16} className="mr-2" />
-                <span>info@pakistanipanorama.com</span>
+                <span>pakistanipanorama@gmail.com</span>
               </a>
               <a href="tel:+923001234567" className="flex items-center text-sm text-gray-600 hover:text-green-600 transition duration-300">
                 <Phone size={16} className="mr-2" />
@@ -35,21 +35,13 @@ const Footer = () => {
             <h4 className="text-base font-semibold mb-3 text-gray-800">Quick Links</h4>
             <ul className="space-y-1 text-sm">
               <li><Link to="/" className="text-gray-600 hover:text-green-600 transition duration-300">Home</Link></li>
-              <li><Link to="/components/hotels" className="text-gray-600 hover:text-green-600 transition duration-300">Hotels</Link></li>
-              <li><Link to="/things-to-do" className="text-gray-600 hover:text-green-600 transition duration-300">Things to Do</Link></li>
-              <li><Link to="/restaurants" className="text-gray-600 hover:text-green-600 transition duration-300">Restaurants</Link></li>
+              <li><Link to="/components/attractions" className="text-gray-600 hover:text-green-600 transition duration-300">Attractions</Link></li>
+              <li><Link to="/emergency" className="text-gray-600 hover:text-green-600 transition duration-300">Emergency Help</Link></li>
+              <li><Link to="/virtual-tours" className="text-gray-600 hover:text-green-600 transition duration-300">Virtual Tour</Link></li>
             </ul>
           </div>
 
-          {/* Support */}
-          <div className="mb-4 sm:mb-0">
-            <h4 className="text-base font-semibold mb-3 text-gray-800">Support</h4>
-            <ul className="space-y-1 text-sm">
-              <li><Link to="/help" className="text-gray-600 hover:text-green-600 transition duration-300">Help Center</Link></li>
-              <li><Link to="/faq" className="text-gray-600 hover:text-green-600 transition duration-300">FAQ</Link></li>
-              <li><Link to="/contact" className="text-gray-600 hover:text-green-600 transition duration-300">Contact Us</Link></li>
-            </ul>
-          </div>
+         
 
           {/* Connect - centered on mobile */}
           <div>

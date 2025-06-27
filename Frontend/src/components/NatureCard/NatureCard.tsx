@@ -1,14 +1,14 @@
 import React from 'react';
 import { MapPin, Star, Image, ChevronRight } from 'lucide-react';
-import type { Destination } from '../../types/destinations.types';
-import { getDestinationPhotoUrl, getDestinationColor } from '../../utils/destination.utils';
+import type { Nature } from '../../types/nature.types.ts';
+import { getDestinationPhotoUrl, getDestinationColor } from '../../utils/nature.utils.ts';
 
-interface DestinationCardProps {
-  destination: Destination;
-  onViewDetails: (destination: Destination) => void;
+interface NatureCardProps {
+  destination: Nature;
+  onViewDetails: (destination: Nature) => void;
 }
 
-const DestinationCard: React.FC<DestinationCardProps> = ({ destination, onViewDetails }) => {
+const NatureCard: React.FC<NatureCardProps > = ({ destination, onViewDetails }) => {
   const photoCount = destination.photos?.length || 0;
   
   return (
@@ -75,4 +75,4 @@ const DestinationCard: React.FC<DestinationCardProps> = ({ destination, onViewDe
   );
 };
 
-export default DestinationCard;
+export default NatureCard;
