@@ -1,6 +1,6 @@
-import type { Destination } from '../types/destinations.types';
+import type { Nature } from '../types/nature.types';
 
-export const getDestinationPhotoUrl = (destination: Destination): string | null => {
+export const getDestinationPhotoUrl = (destination: Nature): string | null => {
   try {
     if (!destination.photos || destination.photos.length === 0) {
       return null;
@@ -51,7 +51,7 @@ export const getDestinationPhotoUrl = (destination: Destination): string | null 
 };
 
 // New function to get multiple photo URLs
-export const getDestinationPhotoUrls = (destination: Destination, limit = 3): string[] => {
+export const getDestinationPhotoUrls = (destination: Nature, limit = 3): string[] => {
   if (!destination.photos || destination.photos.length === 0) {
     return [];
   }

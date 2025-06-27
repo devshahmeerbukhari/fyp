@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getNorthernDestinations } from "../controllers/destinations.controller.js";
+import { getNorthernDestinations } from "../controllers/nature.controller.js";
 
 const router = Router();
 

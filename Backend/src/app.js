@@ -19,8 +19,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
   })
 );
 
@@ -46,14 +46,16 @@ import userRouter from "./routes/user.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import emergencyRouter from "./routes/emergency.routes.js";
 import virtualTourRouter from "./routes/virtualTour.routes.js";
-import destinationsRoutes from "./routes/destinations.routes.js";
+import natureRouter from "./routes/nature.routes.js";
+import attractionsRouter from "./routes/attractions.routes.js";
 //route declarations
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/emergency", emergencyRouter);
 app.use("/api/v1/virtual-tour", virtualTourRouter);
-app.use("/api/v1/destinations", destinationsRoutes);
+app.use("/api/v1/nature", natureRouter);
+app.use("/api/v1/attractions", attractionsRouter);
 // Error handler middleware (should be after all route declarations)
 app.use(errorHandler);
 
