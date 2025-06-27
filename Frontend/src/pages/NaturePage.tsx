@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { RefreshCw, MapPin, Search, Loader2, X } from 'lucide-react';
-import DestinationCard from '../components/DestinationCard/DestinationCard';
-import DestinationDetail from '../components/DestinationDetail/DestinationDetail';
+import NatureCard from '../components/NatureCard/NatureCard';
+import NatureDetail from '../components/NatureDetail/NatureDetail';
 import Pagination from '../components/Pagination/Pagination';
-import type { Destination, DestinationCategory } from '../types/destinations.types';
-import { getCategoryIcon } from '../utils/destination.utils';
+import type { Nature, DestinationCategory } from '../types/nature.types';
+import { getCategoryIcon } from '../utils/nature.utils';
 
 const ITEMS_PER_PAGE = 9; // Number of items to display per page
 
-const Destinations: React.FC = () => {
-  const [destinations, setDestinations] = useState<Destination[]>([]);
+const NaturePage: React.FC = () => {
+  const [destinations, setDestinations] = useState<Nature[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<Nature | null>(null);
   const [activeCategory, setActiveCategory] = useState<DestinationCategory>('all');
   const [dataSource, setDataSource] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   
   // Search functionality states
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filteredDestinations, setFilteredDestinations] = useState<Destination[]>([]);
+  const [filteredDestinations, setFilteredDestinations] = useState<Nature[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   
   const categories: { id: DestinationCategory; name: string }[] = [
@@ -67,7 +67,7 @@ const Destinations: React.FC = () => {
     setLoading(true);
     try {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
-      const response = await fetch(`${backendUrl}/api/v1/destinations/northern?category=${activeCategory}`);
+      const response = await fetch(`${backendUrl}/api/v1/nature/northern?category=${activeCategory}`);
       const data = await response.json();
       
       if (!response.ok) {
@@ -336,7 +336,7 @@ const Destinations: React.FC = () => {
                   className="animate-fadeIn" 
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <DestinationCard 
+                  <NatureCard 
                     destination={destination}
                     onViewDetails={setSelectedDestination}
                   />
@@ -410,10 +410,10 @@ const Destinations: React.FC = () => {
           </p>
         </div>
       </div>
-      
-      {/* Destination detail modal */}
+
+      {/* Nature detail modal */}
       {selectedDestination && (
-        <DestinationDetail 
+        <NatureDetail 
           destination={selectedDestination} 
           onClose={() => setSelectedDestination(null)} 
         />
@@ -443,4 +443,4 @@ const globalStyles = `
 }
 `;
 
-export default Destinations;
+export default NaturePage;

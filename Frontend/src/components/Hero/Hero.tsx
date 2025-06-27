@@ -69,7 +69,7 @@ const Hero = () => {
             <div className="text-emerald-200 text-base font-semibold uppercase tracking-wider">Emergency Help</div>
           </div>
           <div className="text-center group cursor-pointer">
-            <div className="text-5xl md:text-6xl font-black text-white mb-3 group-hover:text-emerald-300 transition-colors duration-300">180+</div>
+            <div className="text-5xl md:text-6xl font-black text-white mb-3 group-hover:text-emerald-300 transition-colors duration-300">500+</div>
             <div className="text-emerald-200 text-base font-semibold uppercase tracking-wider">Destinations</div>
           </div>
           <div className="text-center group cursor-pointer">

@@ -7,15 +7,13 @@ import {
   X,
   Menu,
   User,
-  Home,
-  MapPin,
-  Camera,
-  Calendar,
-  Phone,
-  Video,
-  PhoneCall,
   LogOut,
-  Compass,
+  MapPin,
+  Home,
+  Mountain,
+  Building2,
+  Camera,
+  Phone,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -48,9 +46,9 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Home", icon: Home, path: "/" },
-    { name: "Destinations", icon: Compass, path: "/destinations" },
+    { name: "Nature", icon: Mountain, path: "/nature" },
+    { name: "Attractions", icon: Building2, path: "/attractions" },
     { name: "Virtual Tours", icon: Camera, path: "/virtual-tours" },
-   // { name: "Bookings", icon: Calendar, path: "/bookings" },
     { name: "Emergency Help", icon: Phone, path: "/emergency" },
   ];
 

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { MapPinned, Globe, Star, X, Info, ExternalLink, ChevronRight, ChevronLeft, Image as ImageIcon, MessageSquare, BookOpen } from 'lucide-react';
-import type { Destination } from '../../types/destinations.types';
-import { getDestinationPhotoUrl, getDestinationColor, getDestinationPhotoUrls } from '../../utils/destination.utils';
+import type { Nature } from '../../types/nature.types';
+import { getDestinationPhotoUrl, getDestinationColor, getDestinationPhotoUrls } from '../../utils/nature.utils';
 
-interface DestinationDetailProps {
-  destination: Destination;
+interface NatureDetailProps {
+  destination: Nature;
   onClose: () => void;
 }
 
-const DestinationDetail: React.FC<DestinationDetailProps> = ({ destination, onClose }) => {
+const NatureDetail: React.FC<NatureDetailProps> = ({ destination, onClose }) => {
   const [mediaType, setMediaType] = useState<'photo' | 'map'>('photo');
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -40,6 +40,13 @@ const DestinationDetail: React.FC<DestinationDetailProps> = ({ destination, onCl
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [mediaType, photoUrls.length]);
   
+  // DEBUG - Log destination data to help troubleshoot
+  useEffect(() => {
+    console.log("Destination data:", destination);
+    console.log("Generative Summary:", destination.generativeSummary);
+    console.log("Review Summary:", destination.reviewSummary);
+  }, [destination]);
+  
   const nextPhoto = () => {
     if (photoUrls.length > 1) {
       setCurrentPhotoIndex((prev) => (prev + 1) % photoUrls.length);
@@ -54,8 +61,8 @@ const DestinationDetail: React.FC<DestinationDetailProps> = ({ destination, onCl
     }
   };
 
-  // Check if we have any of the new summary fields
-  const hasGenerativeSummary = !!destination.generativeSummary?.text;
+  // Check if we have any of the new summary fields - FIXED FOR PROPER NESTED STRUCTURE
+  const hasGenerativeSummary = !!destination.generativeSummary?.overview?.text;
   const hasReviewSummary = !!destination.reviewSummary?.text;
   const hasReviewsUri = !!destination.googleMapsLinks?.reviewsUri;
 
@@ -77,7 +84,7 @@ const DestinationDetail: React.FC<DestinationDetailProps> = ({ destination, onCl
         {/* Main content - scrollable */}
         <div className="overflow-y-auto flex-grow">
           {/* Media section - photo carousel or map */}
-          <div className="relative aspect-[21/9] bg-gray-50 overflow-hidden">
+          <div className="relative aspect-[16/10] bg-gray-50 overflow-hidden">
             {mediaType === 'photo' ? (
               photoUrls.length > 0 ? (
                 <div className="relative w-full h-full">
@@ -329,7 +336,7 @@ const DestinationDetail: React.FC<DestinationDetailProps> = ({ destination, onCl
                       </div>
                     )}
                     
-                    {/* Generative Summary - NEW */}
+                    {/* Generative Summary - FIXED to access the proper nested structure */}
                     {hasGenerativeSummary && (
                       <div className="col-span-1 md:col-span-2">
                         <h4 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
@@ -338,7 +345,12 @@ const DestinationDetail: React.FC<DestinationDetailProps> = ({ destination, onCl
                         </h4>
                         <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 h-full">
                           <p className="text-gray-700 leading-relaxed text-base">
-                            {destination.generativeSummary?.text}
+                            {destination.generativeSummary?.overview?.text}
+                            {destination.generativeSummary?.disclaimerText?.text && (
+                              <span className="block mt-2 text-xs text-gray-500 italic">
+                                {destination.generativeSummary.disclaimerText.text}
+                              </span>
+                            )}
                           </p>
                         </div>
                       </div>
@@ -436,4 +448,4 @@ const DestinationDetail: React.FC<DestinationDetailProps> = ({ destination, onCl
   );
 };
 
-export default DestinationDetail;
+export default NatureDetail;

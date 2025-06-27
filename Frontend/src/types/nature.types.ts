@@ -1,4 +1,4 @@
-export interface Destination {
+export interface Nature {
   id: string;
   displayName?: {
     text: string;
@@ -19,8 +19,17 @@ export interface Destination {
   editorialSummary?: {
     text: string;
   };
+  // Updated structure based on actual API response
   generativeSummary?: {
-    text: string;
+    overview?: {
+      text: string;
+      languageCode?: string;
+    };
+    disclaimerText?: {
+      text: string;
+      languageCode?: string;
+    };
+    overviewFlagContentUri?: string;
   };
   reviewSummary?: {
     text: string;
